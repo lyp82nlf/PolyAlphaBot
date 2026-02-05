@@ -1,0 +1,100 @@
+{
+  "adapter": {
+    "name": "polymarket",
+    "api_key": "REPLACE_ME",
+    "extra": {}
+  },
+  "adapters": [
+    {
+      "name": "polymarket",
+      "api_key": "REPLACE_ME",
+      "extra": {
+        "market_db_path": "data/polymarket_markets.db",
+        "clob_headers": {
+          "user-agent": "Mozilla/5.0"
+        },
+        "clob_timeout_seconds": 20,
+        "clob_batch_size": 100
+      }
+    },
+    { "name": "opinion", "api_key": "REPLACE_ME", "extra": { "enabled": false } },
+    { "name": "predict", "api_key": "REPLACE_ME", "extra": { "enabled": false } }
+  ],
+  "engine": {
+    "search_query": "token",
+    "search_limit": 100
+  },
+  "risk": {
+    "max_open_orders": 20,
+    "max_positions": 20,
+    "max_position_size": 1000.0,
+    "max_total_exposure": 5000.0
+  },
+  "strategy": {
+    "min_confidence": 0.7,
+    "max_candidates": 10,
+    "buy_price_cap": 0.9,
+    "target_sell_price": 0.99,
+    "min_expected_roe": 0.05,
+    "order_quantity": 100.0,
+    "buy_notional_usd": 100.0,
+    "match_window_days": 6,
+    "market_name_patterns": [
+      "will .* launch a token",
+      "will .* issue a token",
+      "will .* tge"
+    ]
+  },
+  "poll_interval_seconds": 1.0,
+  "error_threshold": 5,
+  "error_window_seconds": 30,
+  "wecom_webhook_url": null,
+  "wecom_cooldown_seconds": 60,
+  "dedup_window_seconds": 3600,
+  "consumer_max_workers": 4,
+  "market_poll_interval_seconds": 60,
+  "market_db_path": "data/polymarket_markets.db",
+  "gamma_headers": {
+    "user-agent": "Mozilla/5.0",
+    "accept-language": "zh-CN,zh;q=0.9,en;q=0.8"
+  },
+  "tge_db_path": "data/tge_events.db",
+  "tge_sources": [
+    {
+      "name": "alpha123",
+      "url": "https://alpha123.uk/api/data?fresh=1",
+      "timeout_seconds": 10,
+      "timezone_name": "UTC",
+      "headers": {
+        "accept": "*/*",
+        "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+        "if-modified-since": "Mon, 02 Feb 2026 13:34:26 GMT",
+        "if-none-match": "W/\"6980a7e2-6bc\"",
+        "priority": "u=1, i",
+        "referer": "https://alpha123.uk/zh/index.html",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "user-agent": "Mozilla/5.0",
+        "cookie": "REPLACE_ME"
+      }
+    },
+    {
+      "name": "alpha520",
+      "url": "https://alpha520.com/api/airdrops/history",
+      "timeout_seconds": 10,
+      "headers": {
+        "accept": "application/json",
+        "accept-language": "zh-CN,zh;q=0.9,en;q=0.8",
+        "if-none-match": "W/\"cfc0-OmGVVqBWrYc4mbwTcaxZeJjyOvk\"",
+        "priority": "u=1, i",
+        "referer": "https://alpha520.com/",
+        "sec-fetch-dest": "empty",
+        "sec-fetch-mode": "cors",
+        "sec-fetch-site": "same-origin",
+        "user-agent": "Mozilla/5.0",
+        "cookie": "REPLACE_ME"
+      }
+    }
+  ]
+}

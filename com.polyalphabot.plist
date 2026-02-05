@@ -1,0 +1,45 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  NOTE: Paths in this file are template values.
+  install_autostart.sh will replace them with the real project path.
+-->
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+  <dict>
+    <key>Label</key>
+    <string>com.polyalphabot</string>
+
+    <key>ProgramArguments</key>
+    <array>
+      <string>/usr/bin/python3</string>
+      <string>-u</string>
+      <string>-m</string>
+      <string>polyalphabot.main</string>
+      <string>--config</string>
+      <string>/REPLACE_WITH_PROJECT_PATH/config.json</string>
+      <string>--directory</string>
+      <string>/REPLACE_WITH_PROJECT_PATH</string>
+    </array>
+
+    <key>WorkingDirectory</key>
+    <string>/REPLACE_WITH_PROJECT_PATH</string>
+
+    <key>RunAtLoad</key>
+    <true/>
+    <key>KeepAlive</key>
+    <true/>
+
+    <key>StandardOutPath</key>
+    <string>/REPLACE_WITH_PROJECT_PATH/logs/polyalphabot.out.log</string>
+    <key>StandardErrorPath</key>
+    <string>/REPLACE_WITH_PROJECT_PATH/logs/polyalphabot.err.log</string>
+
+    <key>EnvironmentVariables</key>
+    <dict>
+      <key>PYTHONPATH</key>
+      <string>/REPLACE_WITH_PROJECT_PATH/src</string>
+      <key>PATH</key>
+      <string>/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/opt/homebrew/bin</string>
+    </dict>
+  </dict>
+</plist>
