@@ -82,11 +82,13 @@ class TgeProducer(threading.Thread):
     def _format_tge_markdown(signal: TgeSignal) -> str:
         launch = signal.launch_time.date().isoformat() if signal.launch_time else "unknown"
         chain = signal.chain or "unknown"
+        def color(text: str, tone: str = "info") -> str:
+            return f"<font color=\"{tone}\">{text}</font>"
         return (
-            f"**Symbol**: **{signal.token_symbol}**\n"
-            f"**Name**: **{signal.token_name}**\n"
-            f"**Chain**: **{chain}**\n"
-            f"**Launch**: **{launch}**"
+            f"**Symbol**: {color(signal.token_symbol)}\n"
+            f"**Name**: {color(signal.token_name)}\n"
+            f"**Chain**: {color(chain, 'comment' if chain == 'unknown' else 'info')}\n"
+            f"**Launch**: {color(launch, 'warning' if launch == 'unknown' else 'info')}"
         )
 
     @staticmethod

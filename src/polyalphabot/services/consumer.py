@@ -27,4 +27,7 @@ class MarketConsumer:
             future.result()
         except Exception as exc:
             logger.exception("Market consumer error")
-            self._notifier.send_markdown("消费执行错误", f"**error**: {exc}")
+            self._notifier.send_markdown(
+                "消费执行错误",
+                f"**error**: <font color=\"warning\">{exc}</font>",
+            )

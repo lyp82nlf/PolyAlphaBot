@@ -40,7 +40,10 @@ class PolymarketMarketWatcher(threading.Thread):
             try:
                 self._poll_once()
             except Exception as exc:
-                self._notifier.send_markdown("市场同步错误", f"**error**: {exc}")
+                self._notifier.send_markdown(
+                    "市场同步错误",
+                    f"**error**: <font color=\"warning\">{exc}</font>",
+                )
             time.sleep(self._config.poll_interval_seconds)
 
     def _poll_once(self) -> None:

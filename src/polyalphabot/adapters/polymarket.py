@@ -257,12 +257,14 @@ class PolymarketAdapter(PredictionMarketAdapter):
         cost = "N/A" if order.price is None else f"{order.price * order.quantity:.4f}"
         avg_price = "N/A" if order.price is None else f"{order.price:.4f}"
         created = order.created_at.isoformat()
+        def color(text: str, tone: str = "info") -> str:
+            return f"<font color=\"{tone}\">{text}</font>"
         message = (
             f"[{record.question}]({url})\n"
-            f"**数量**: {order.quantity:.4f}\n"
-            f"**均价**: {avg_price}\n"
-            f"**金额**: {cost}\n"
-            f"**下单时间**: {created}"
+            f"**数量**: {color(f'{order.quantity:.4f}')}\n"
+            f"**均价**: {color(avg_price)}\n"
+            f"**金额**: {color(cost, 'warning')}\n"
+            f"**下单时间**: {color(created, 'comment')}"
         )
         self._notifier.send_markdown(title, message)
 
@@ -284,19 +286,21 @@ class PolymarketAdapter(PredictionMarketAdapter):
             url = polymarket_event_url(event_slug) if event_slug else ""
             question = record.question
         proceeds = target_sell_price * quantity
+        def color(text: str, tone: str = "info") -> str:
+            return f"<font color=\"{tone}\">{text}</font>"
         message = (
             f"[{question}]({url})\n"
-            f"**数量**: {quantity:.4f}\n"
-            f"**卖出价**: {target_sell_price:.4f}\n"
-            f"**卖出金额**: {proceeds:.4f}"
+            f"**数量**: {color(f'{quantity:.4f}')}\n"
+            f"**卖出价**: {color(f'{target_sell_price:.4f}')}\n"
+            f"**卖出金额**: {color(f'{proceeds:.4f}', 'warning')}"
         )
         self._notifier.send_markdown(title, message)
         profit = proceeds - (buy_price * quantity)
         profit_message = (
             f"[{question}]({url})\n"
-            f"**买入金额**: {(buy_price * quantity):.4f}\n"
-            f"**卖出金额**: {proceeds:.4f}\n"
-            f"**利润**: {profit:.4f} U"
+            f"**买入金额**: {color(f'{(buy_price * quantity):.4f}')}\n"
+            f"**卖出金额**: {color(f'{proceeds:.4f}')}\n"
+            f"**利润**: {color(f'{profit:.4f} U', 'info' if profit >= 0 else 'warning')}"
         )
         self._notifier.send_markdown("模拟交易利润", profit_message)
 
@@ -304,12 +308,14 @@ class PolymarketAdapter(PredictionMarketAdapter):
         if not self._notifier:
             return
         launch = signal.launch_time.date().isoformat() if signal.launch_time else "unknown"
+        def color(text: str, tone: str = "warning") -> str:
+            return f"<font color=\"{tone}\">{text}</font>"
         self._notifier.send_markdown(
             "TGE未匹配到市场",
             (
-                f"**Symbol**: **{signal.token_symbol}**\n"
-                f"**Name**: **{signal.token_name}**\n"
-                f"**Launch**: **{launch}**"
+                f"**Symbol**: {color(signal.token_symbol)}\n"
+                f"**Name**: {color(signal.token_name)}\n"
+                f"**Launch**: {color(launch)}"
             ),
         )
 
@@ -326,10 +332,12 @@ class PolymarketAdapter(PredictionMarketAdapter):
             lines.append(f"- [{record.question}]({url})")
         title = f"TGE匹配成功（{len(lines)}）"
         launch = signal.launch_time.date().isoformat() if signal.launch_time else "unknown"
+        def color(text: str, tone: str = "info") -> str:
+            return f"<font color=\"{tone}\">{text}</font>"
         header = (
-            f"**Symbol**: **{signal.token_symbol}**\n"
-            f"**Name**: **{signal.token_name}**\n"
-            f"**Launch**: **{launch}**\n"
+            f"**Symbol**: {color(signal.token_symbol)}\n"
+            f"**Name**: {color(signal.token_name)}\n"
+            f"**Launch**: {color(launch)}\n"
             f"**Markets**:"
         )
         self._send_markdown_lines(title, header, lines)
