@@ -21,6 +21,9 @@ class MarketWatcherConfig:
     limit_per_type: int = 100
     keep_closed_markets: int = 1
     events_status: str | None = None
+    error_threshold: int = 3
+    error_window_seconds: int = 300
+    error_cooldown_seconds: int = 600
 
 
 class PolymarketMarketWatcher(threading.Thread):
@@ -36,17 +39,40 @@ class PolymarketMarketWatcher(threading.Thread):
         self._store = store
         self._notifier = notifier
         self._config = config
+        self._error_times: list[float] = []
+        self._last_error_notify = 0.0
 
     def run(self) -> None:
         while True:
             try:
                 self._poll_once()
+                self._error_times.clear()
             except Exception as exc:
-                self._notifier.send_markdown(
-                    "市场同步错误",
-                    f"**error**: <font color=\"warning\">{exc}</font>",
-                )
+                now = time.time()
+                self._error_times.append(now)
+                self._error_times = [
+                    t for t in self._error_times if now - t <= self._config.error_window_seconds
+                ]
+                logger.exception("Market watcher sync failed")
+                if self._should_notify_error(now):
+                    self._notifier.send_markdown(
+                        "市场同步错误",
+                        (
+                            f"**error**: <font color=\"warning\">{exc}</font>\n"
+                            f"**errors**: {len(self._error_times)}\n"
+                            f"**window**: {self._config.error_window_seconds}s"
+                        ),
+                    )
+                    self._last_error_notify = now
+                    self._error_times.clear()
             time.sleep(self._config.poll_interval_seconds)
+
+    def _should_notify_error(self, now: float) -> bool:
+        if len(self._error_times) < self._config.error_threshold:
+            return False
+        if now - self._last_error_notify < self._config.error_cooldown_seconds:
+            return False
+        return True
 
     def _poll_once(self) -> None:
         events, markets = self._fetch_all()
@@ -103,7 +129,16 @@ class PolymarketMarketWatcher(threading.Thread):
             if self._config.events_status:
                 params["events_status"] = self._config.events_status
 
-            payload = self._gamma.public_search(params)
+            try:
+                payload = self._gamma.public_search(params)
+            except Exception as exc:
+                logger.warning(
+                    "Gamma public_search failed page=%s query=%s err=%s",
+                    page,
+                    self._config.query,
+                    exc,
+                )
+                raise
             page_events = payload.get("events") or []
             if not page_events:
                 break

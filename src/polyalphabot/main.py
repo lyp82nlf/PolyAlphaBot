@@ -68,7 +68,14 @@ def main() -> None:
     engines = build_engines(settings, notifier)
     consumer = MarketConsumer(engines, settings.consumer_max_workers, notifier)
 
-    gamma = GammaClient(GammaConfig(headers=settings.gamma_headers))
+    gamma = GammaClient(
+        GammaConfig(
+            headers=settings.gamma_headers,
+            timeout_seconds=settings.gamma_timeout_seconds,
+            retries=settings.gamma_retries,
+            retry_backoff_seconds=settings.gamma_retry_backoff_seconds,
+        )
+    )
     store = PolymarketStore(settings.market_db_path)
     watcher = PolymarketMarketWatcher(
         gamma=gamma,
@@ -77,6 +84,9 @@ def main() -> None:
         config=MarketWatcherConfig(
             poll_interval_seconds=settings.market_poll_interval_seconds,
             query="launch a token",
+            error_threshold=settings.market_error_threshold,
+            error_window_seconds=settings.market_error_window_seconds,
+            error_cooldown_seconds=settings.market_error_cooldown_seconds,
         ),
     )
     watcher.start()

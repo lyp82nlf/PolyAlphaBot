@@ -65,11 +65,17 @@
   "dedup_window_seconds": 3600,
   "consumer_max_workers": 4,
   "market_poll_interval_seconds": 60,
+  "market_error_threshold": 3,
+  "market_error_window_seconds": 300,
+  "market_error_cooldown_seconds": 600,
   "market_db_path": "data/polymarket_markets.db",
   "gamma_headers": {
     "user-agent": "Mozilla/5.0",
     "accept-language": "zh-CN,zh;q=0.9,en;q=0.8"
   },
+  "gamma_timeout_seconds": 15,
+  "gamma_retries": 2,
+  "gamma_retry_backoff_seconds": 1.0,
   "tge_db_path": "data/tge_events.db",
   "tge_sources": [
     {
