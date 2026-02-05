@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from typing import Dict, Iterable, List, Optional
@@ -9,6 +10,7 @@ from urllib.request import Request, urlopen
 from polyalphabot.models.entities import TgeSignal
 from polyalphabot.services.tge_source import TgeSource
 
+logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class Alpha123Config:
@@ -28,12 +30,28 @@ class Alpha123Source(TgeSource):
     def poll(self) -> Iterable[TgeSignal]:
         payload = self._fetch()
         airdrops = payload.get("airdrops", [])
+        logger.info("alpha123 fetched airdrops=%s", len(airdrops))
         signals: List[TgeSignal] = []
+        skipped_type = 0
+        skipped_pretge = 0
         for item in airdrops:
+            item_type = str(item.get("type", "")).lower()
+            if item_type != "tge":
+                skipped_type += 1
+                continue
+            if bool(item.get("pretge", False)):
+                skipped_pretge += 1
+                continue
             signal = self._to_signal(item)
             if signal is None:
                 continue
             signals.append(signal)
+        logger.info(
+            "alpha123 signals=%s skipped_type=%s skipped_pretge=%s",
+            len(signals),
+            skipped_type,
+            skipped_pretge,
+        )
         return signals
 
     def _fetch(self) -> Dict[str, object]:

@@ -50,14 +50,14 @@ def main() -> None:
     parser.add_argument("--directory")
     args = parser.parse_args()
 
-    setup_logging(logging.INFO)
+    settings = SettingsLoader.load(args.config)
+    setup_logging(logging.INFO, log_path=settings.log_path)
     if args.directory:
         try:
             os.chdir(args.directory)
         except OSError as exc:
             logging.error("Failed to change directory to %s: %s", args.directory, exc)
             raise
-    settings = SettingsLoader.load(args.config)
     sources = build_sources(settings.tge_sources)
     notifier = WeComNotifier(
         WeComConfig(

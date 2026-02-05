@@ -17,8 +17,20 @@
         "clob_batch_size": 100
       }
     },
-    { "name": "opinion", "api_key": "REPLACE_ME", "extra": { "enabled": false } },
-    { "name": "predict", "api_key": "REPLACE_ME", "extra": { "enabled": false } }
+    {
+      "name": "opinion",
+      "api_key": "REPLACE_ME",
+      "extra": {
+        "enabled": false
+      }
+    },
+    {
+      "name": "predict",
+      "api_key": "REPLACE_ME",
+      "extra": {
+        "enabled": false
+      }
+    }
   ],
   "engine": {
     "search_query": "token",
@@ -96,5 +108,6 @@
         "cookie": "REPLACE_ME"
       }
     }
-  ]
+  ],
+  "log_path": "logs/polyalphabot.log"
 }

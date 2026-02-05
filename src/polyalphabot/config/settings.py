@@ -36,6 +36,7 @@ class SettingsLoader:
             market_db_path=str(data.get("market_db_path", "data/polymarket_markets.db")),
             gamma_headers={str(k): str(v) for k, v in (data.get("gamma_headers", {}) or {}).items()},
             tge_db_path=str(data.get("tge_db_path", "data/tge_events.db")),
+            log_path=str(data.get("log_path", "logs/polyalphabot.log")),
         )
 
     @staticmethod

@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 import threading
 import time
 from dataclasses import dataclass
@@ -11,6 +12,7 @@ from polyalphabot.services.polymarket_gamma import GammaClient
 from polyalphabot.services.polymarket_market_store import EventRecord, MarketRecord, PolymarketStore
 from polyalphabot.utils.timeparse import parse_datetime
 
+logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class MarketWatcherConfig:
@@ -50,6 +52,7 @@ class PolymarketMarketWatcher(threading.Thread):
         events, markets = self._fetch_all()
         new_events = self._store.upsert_events(events)
         self._store.upsert_markets(markets)
+        logger.info("Market watcher fetched events=%s markets=%s new=%s", len(events), len(markets), len(new_events))
         if not new_events:
             return
         self._notify_new_events(new_events)

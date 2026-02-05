@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import logging
 import threading
 import time
 from dataclasses import dataclass
@@ -13,6 +14,7 @@ from polyalphabot.services.notification import Notifier
 from polyalphabot.services.tge_source import TgeSource
 from polyalphabot.services.clock import utc_now
 
+logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
 class TgeEnvelope:
@@ -45,10 +47,16 @@ class TgeProducer(threading.Thread):
     def run(self) -> None:
         while True:
             try:
-                for signal in self._source.poll():
+                signals = list(self._source.poll())
+                new_count = 0
+                skipped_past = 0
+                skipped_dupe = 0
+                for signal in signals:
                     if self._is_past_launch(signal):
+                        skipped_past += 1
                         continue
                     if self._deduper.seen(self._source.name(), signal):
+                        skipped_dupe += 1
                         continue
                     self._notifier.send_markdown(
                         "新TGE事件",
@@ -61,6 +69,15 @@ class TgeProducer(threading.Thread):
                             received_at=datetime.now(timezone.utc),
                         )
                     )
+                    new_count += 1
+                logger.info(
+                    "TGE source=%s total=%s new=%s skipped_past=%s skipped_dupe=%s",
+                    self._source.name(),
+                    len(signals),
+                    new_count,
+                    skipped_past,
+                    skipped_dupe,
+                )
             except Exception as exc:
                 now = time.time()
                 self._error_times.append(now)

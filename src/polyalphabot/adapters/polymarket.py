@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+import logging
 from datetime import timedelta
 from typing import List, Optional
 
@@ -23,6 +24,7 @@ from polyalphabot.services.polymarket_market_store import PolymarketStore
 from polyalphabot.strategies.tge_market_sweep import TgeSweepConfig
 from polyalphabot.utils.timeparse import parse_datetime
 
+logger = logging.getLogger(__name__)
 
 class PolymarketAdapter(PredictionMarketAdapter):
     """Placeholder adapter. Implement using docs in /docs."""
@@ -94,9 +96,17 @@ class PolymarketAdapter(PredictionMarketAdapter):
         if not markets:
             self._notify_no_match(signal)
             return []
+        logger.info(
+            "Polymarket candidates for %s/%s: %s",
+            signal.token_symbol,
+            signal.token_name,
+            len(markets),
+        )
         token_map = self._extract_token_ids(markets)
         if not token_map:
+            logger.info("Polymarket token map empty for %s/%s", signal.token_symbol, signal.token_name)
             return []
+        logger.info("Polymarket token map size=%s", len(token_map))
         requests = [{"token_id": token_id, "side": "BUY"} for token_id in token_map]
         try:
             books = self._clob.get_books_batch(requests, batch_size=self._clob_batch_size)
@@ -104,7 +114,9 @@ class PolymarketAdapter(PredictionMarketAdapter):
             return []
         scored = self._score_markets(token_map, books, config)
         if not scored:
+            logger.info("Polymarket scored empty for %s/%s", signal.token_symbol, signal.token_name)
             return []
+        logger.info("Polymarket scored markets=%s", len(scored))
         self._notify_match(signal, markets)
         scored.sort(key=lambda item: item[0], reverse=True)
         _, market, price, quantity = scored[0]

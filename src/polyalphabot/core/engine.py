@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import logging
 from typing import List
 
 from polyalphabot.adapters.base import PredictionMarketAdapter
@@ -32,6 +33,8 @@ class TradingEngine:
         self._config = config
 
     def on_tge_signal(self, signal: TgeSignal) -> List[OrderRequest]:
+        logger = logging.getLogger(__name__)
+        logger.info("Engine %s handling TGE %s/%s", self._adapter.name(), signal.token_symbol, signal.token_name)
         orders: List[OrderRequest] = []
         build_orders = getattr(self._adapter, "build_orders_for_tge", None)
         if callable(build_orders):

@@ -39,6 +39,7 @@ class ClobClient:
         results: List[Dict[str, Any]] = []
         if batch_size <= 0:
             batch_size = 100
+        logger.info("CLOB batch request total=%s batch_size=%s", len(requests), batch_size)
         for i in range(0, len(requests), batch_size):
             batch = requests[i : i + batch_size]
             results.extend(self.get_books(batch))

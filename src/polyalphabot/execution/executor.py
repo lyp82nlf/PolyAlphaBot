@@ -12,6 +12,9 @@ class Executor:
 
     def submit_orders(self, orders: List[OrderRequest]) -> List[Order]:
         results: List[Order] = []
+        if not orders:
+            return results
+        # Using adapter logging for per-order details.
         for order in orders:
             results.append(self._adapter.place_order(order))
         return results

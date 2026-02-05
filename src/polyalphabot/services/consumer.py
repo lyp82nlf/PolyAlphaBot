@@ -19,6 +19,7 @@ class MarketConsumer:
 
     def submit(self, signal: TgeSignal) -> None:
         for engine in self._engines:
+            logger.info("Submitting TGE to engine=%s symbol=%s", engine._adapter.name(), signal.token_symbol)
             future = self._executor.submit(engine.on_tge_signal, signal)
             future.add_done_callback(self._handle_done)
 

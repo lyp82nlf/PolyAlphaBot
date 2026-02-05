@@ -34,3 +34,4 @@ class Settings:
     market_db_path: str = "data/polymarket_markets.db"
     gamma_headers: Dict[str, str] = field(default_factory=dict)
     tge_db_path: str = "data/tge_events.db"
+    log_path: str = "logs/polyalphabot.log"
