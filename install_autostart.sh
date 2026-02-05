@@ -39,19 +39,17 @@ sed -i '' "s|<string>/usr/bin/python3</string>|<string>${PYTHON_BIN}</string>|" 
 # Replace all template paths
 sed -i '' "s|/REPLACE_WITH_PROJECT_PATH|${SCRIPT_DIR}|g" "${TARGET_PLIST}"
 
-# Ensure ProgramArguments include --directory and correct config path
-if ! /usr/bin/grep -q "<string>--directory</string>" "${TARGET_PLIST}"; then
-  /usr/libexec/PlistBuddy -c "Delete :ProgramArguments" "${TARGET_PLIST}" >/dev/null 2>&1 || true
-  /usr/libexec/PlistBuddy -c "Add :ProgramArguments array" "${TARGET_PLIST}"
-  /usr/libexec/PlistBuddy -c "Add :ProgramArguments:0 string ${PYTHON_BIN}" "${TARGET_PLIST}"
-  /usr/libexec/PlistBuddy -c "Add :ProgramArguments:1 string -u" "${TARGET_PLIST}"
-  /usr/libexec/PlistBuddy -c "Add :ProgramArguments:2 string -m" "${TARGET_PLIST}"
-  /usr/libexec/PlistBuddy -c "Add :ProgramArguments:3 string polyalphabot.main" "${TARGET_PLIST}"
-  /usr/libexec/PlistBuddy -c "Add :ProgramArguments:4 string --config" "${TARGET_PLIST}"
-  /usr/libexec/PlistBuddy -c "Add :ProgramArguments:5 string ${SCRIPT_DIR}/config.json" "${TARGET_PLIST}"
-  /usr/libexec/PlistBuddy -c "Add :ProgramArguments:6 string --directory" "${TARGET_PLIST}"
-  /usr/libexec/PlistBuddy -c "Add :ProgramArguments:7 string ${SCRIPT_DIR}" "${TARGET_PLIST}"
-fi
+# Rebuild ProgramArguments to avoid stale or malformed entries
+/usr/libexec/PlistBuddy -c "Delete :ProgramArguments" "${TARGET_PLIST}" >/dev/null 2>&1 || true
+/usr/libexec/PlistBuddy -c "Add :ProgramArguments array" "${TARGET_PLIST}"
+/usr/libexec/PlistBuddy -c "Add :ProgramArguments:0 string ${PYTHON_BIN}" "${TARGET_PLIST}"
+/usr/libexec/PlistBuddy -c "Add :ProgramArguments:1 string -u" "${TARGET_PLIST}"
+/usr/libexec/PlistBuddy -c "Add :ProgramArguments:2 string -m" "${TARGET_PLIST}"
+/usr/libexec/PlistBuddy -c "Add :ProgramArguments:3 string polyalphabot.main" "${TARGET_PLIST}"
+/usr/libexec/PlistBuddy -c "Add :ProgramArguments:4 string --config" "${TARGET_PLIST}"
+/usr/libexec/PlistBuddy -c "Add :ProgramArguments:5 string ${SCRIPT_DIR}/config.json" "${TARGET_PLIST}"
+/usr/libexec/PlistBuddy -c "Add :ProgramArguments:6 string --directory" "${TARGET_PLIST}"
+/usr/libexec/PlistBuddy -c "Add :ProgramArguments:7 string ${SCRIPT_DIR}" "${TARGET_PLIST}"
 
 launchctl load "${TARGET_PLIST}"
 
