@@ -11,6 +11,17 @@ TARGET_PLIST="${LAUNCH_AGENTS_DIR}/${LABEL}.plist"
 mkdir -p "${LAUNCH_AGENTS_DIR}"
 mkdir -p "${SCRIPT_DIR}/logs"
 
+PYTHON_BIN="/usr/bin/python3"
+if [[ -x "${SCRIPT_DIR}/.venv/bin/python3" ]]; then
+  PYTHON_BIN="${SCRIPT_DIR}/.venv/bin/python3"
+elif [[ -x "${SCRIPT_DIR}/.venv/bin/python" ]]; then
+  PYTHON_BIN="${SCRIPT_DIR}/.venv/bin/python"
+elif [[ -x "${SCRIPT_DIR}/venv/bin/python3" ]]; then
+  PYTHON_BIN="${SCRIPT_DIR}/venv/bin/python3"
+elif [[ -x "${SCRIPT_DIR}/venv/bin/python" ]]; then
+  PYTHON_BIN="${SCRIPT_DIR}/venv/bin/python"
+fi
+
 if [[ ! -f "${SCRIPT_DIR}/${PLIST_TEMPLATE}" ]]; then
   echo "Missing ${PLIST_TEMPLATE} in ${SCRIPT_DIR}"
   exit 1
@@ -22,27 +33,11 @@ fi
 
 cp "${SCRIPT_DIR}/${PLIST_TEMPLATE}" "${TARGET_PLIST}"
 
-# Replace WorkingDirectory
-sed -i '' "/<key>WorkingDirectory<\/key>/,/<string>/ s|<string>.*</string>|<string>${SCRIPT_DIR}</string>|" "${TARGET_PLIST}"
+# Replace python interpreter
+sed -i '' "s|<string>/usr/bin/python3</string>|<string>${PYTHON_BIN}</string>|" "${TARGET_PLIST}"
 
-# Replace --directory argument
-sed -i '' "/<string>--directory<\/string>/,/<string>/ {
-  /<string>--directory<\/string>/n
-  s|<string>.*</string>|<string>${SCRIPT_DIR}</string>|
-}" "${TARGET_PLIST}"
-
-# Replace --config argument
-sed -i '' "/<string>--config<\/string>/,/<string>/ {
-  /<string>--config<\/string>/n
-  s|<string>.*</string>|<string>${SCRIPT_DIR}/config.json</string>|
-}" "${TARGET_PLIST}"
-
-# Replace log paths
-sed -i '' "/<key>StandardOutPath<\/key>/,/<string>/ s|<string>.*</string>|<string>${SCRIPT_DIR}/logs/polyalphabot.out.log</string>|" "${TARGET_PLIST}"
-sed -i '' "/<key>StandardErrorPath<\/key>/,/<string>/ s|<string>.*</string>|<string>${SCRIPT_DIR}/logs/polyalphabot.err.log</string>|" "${TARGET_PLIST}"
-
-# Replace PYTHONPATH
-sed -i '' "/<key>PYTHONPATH<\/key>/,/<string>/ s|<string>.*</string>|<string>${SCRIPT_DIR}/src</string>|" "${TARGET_PLIST}"
+# Replace all template paths
+sed -i '' "s|/REPLACE_WITH_PROJECT_PATH|${SCRIPT_DIR}|g" "${TARGET_PLIST}"
 
 launchctl load "${TARGET_PLIST}"
 
