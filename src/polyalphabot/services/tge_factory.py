@@ -7,7 +7,7 @@ from polyalphabot.services.alpha520_source import Alpha520Config, Alpha520Source
 from polyalphabot.services.tge_source import TgeSource
 
 
-def build_sources(configs: List[Dict[str, object]]) -> List[TgeSource]:
+def build_sources(configs: List[Dict[str, object]], proxies: Dict[str, str] | None = None) -> List[TgeSource]:
     sources: List[TgeSource] = []
     for cfg in configs:
         name = str(cfg.get("name", "")).lower()
@@ -23,6 +23,7 @@ def build_sources(configs: List[Dict[str, object]]) -> List[TgeSource]:
                     headers={str(k): str(v) for k, v in headers.items()},
                     timeout_seconds=int(cfg.get("timeout_seconds", 10)),
                     timezone_name=str(cfg.get("timezone_name", "UTC")),
+                    proxies=proxies,
                 )
             )
             sources.append(source)
@@ -37,6 +38,7 @@ def build_sources(configs: List[Dict[str, object]]) -> List[TgeSource]:
                     url=url,
                     headers={str(k): str(v) for k, v in headers.items()},
                     timeout_seconds=int(cfg.get("timeout_seconds", 10)),
+                    proxies=proxies,
                 )
             )
             sources.append(source)

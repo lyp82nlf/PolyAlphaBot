@@ -5,10 +5,11 @@ import logging
 from dataclasses import dataclass
 from datetime import datetime
 from typing import Dict, Iterable, List, Optional
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
 from polyalphabot.models.entities import TgeSignal
 from polyalphabot.services.tge_source import TgeSource
+from polyalphabot.utils.http import urlopen_with_proxy
 
 logger = logging.getLogger(__name__)
 
@@ -17,6 +18,7 @@ class Alpha520Config:
     url: str = "https://alpha520.com/api/airdrops/history"
     headers: Dict[str, str] = None
     timeout_seconds: int = 10
+    proxies: Dict[str, str] | None = None
 
 
 class Alpha520Source(TgeSource):
@@ -55,7 +57,11 @@ class Alpha520Source(TgeSource):
     def _fetch(self) -> Dict[str, object]:
         headers = self._config.headers or {}
         request = Request(self._config.url, headers=headers)
-        with urlopen(request, timeout=self._config.timeout_seconds) as response:
+        with urlopen_with_proxy(
+            request,
+            timeout=self._config.timeout_seconds,
+            proxies=self._config.proxies,
+        ) as response:
             data = response.read().decode("utf-8")
         return json.loads(data)
 

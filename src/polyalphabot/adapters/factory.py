@@ -10,7 +10,11 @@ from polyalphabot.config.schema import AdapterConfig
 from polyalphabot.services.notification import Notifier
 
 
-def build_adapters(configs: List[AdapterConfig], notifier: Notifier | None = None) -> List[PredictionMarketAdapter]:
+def build_adapters(
+    configs: List[AdapterConfig],
+    notifier: Notifier | None = None,
+    proxies: dict[str, str] | None = None,
+) -> List[PredictionMarketAdapter]:
     adapters: List[PredictionMarketAdapter] = []
     for cfg in configs:
         name = cfg.name.lower()
@@ -26,6 +30,7 @@ def build_adapters(configs: List[AdapterConfig], notifier: Notifier | None = Non
                     clob_headers=clob_headers,
                     clob_timeout_seconds=clob_timeout_seconds,
                     clob_batch_size=clob_batch_size,
+                    proxies=proxies,
                     notifier=notifier,
                 )
             )

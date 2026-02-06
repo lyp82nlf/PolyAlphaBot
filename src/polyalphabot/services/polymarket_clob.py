@@ -5,8 +5,9 @@ import logging
 import time
 from dataclasses import dataclass
 from typing import Any, Dict, List
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
+from polyalphabot.utils.http import urlopen_with_proxy
 logger = logging.getLogger(__name__)
 
 
@@ -15,6 +16,7 @@ class ClobConfig:
     base_url: str = "https://clob.polymarket.com"
     timeout_seconds: int = 20
     headers: Dict[str, str] | None = None
+    proxies: Dict[str, str] | None = None
 
 
 class ClobClient:
@@ -29,7 +31,11 @@ class ClobClient:
         data = json.dumps(requests).encode("utf-8")
         request = Request(url, data=data, headers=headers, method="POST")
         start = time.time()
-        with urlopen(request, timeout=self._config.timeout_seconds) as response:
+        with urlopen_with_proxy(
+            request,
+            timeout=self._config.timeout_seconds,
+            proxies=self._config.proxies,
+        ) as response:
             payload = response.read().decode("utf-8")
         elapsed = time.time() - start
         logger.info("CLOB /books batch=%s bytes=%s elapsed=%.2fs", len(requests), len(data), elapsed)

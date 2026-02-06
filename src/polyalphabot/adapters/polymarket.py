@@ -36,11 +36,18 @@ class PolymarketAdapter(PredictionMarketAdapter):
         clob_headers: dict[str, str] | None = None,
         clob_timeout_seconds: int = 20,
         clob_batch_size: int = 100,
+        proxies: dict[str, str] | None = None,
         notifier: Notifier | None = None,
     ) -> None:
         self._api_key = api_key
         self._store = PolymarketStore(market_db_path)
-        self._clob = ClobClient(ClobConfig(headers=clob_headers, timeout_seconds=clob_timeout_seconds))
+        self._clob = ClobClient(
+            ClobConfig(
+                headers=clob_headers,
+                timeout_seconds=clob_timeout_seconds,
+                proxies=proxies,
+            )
+        )
         self._clob_batch_size = clob_batch_size
         self._notifier = notifier
         self._pending_sells: dict[str, list[tuple[float, float, float]]] = {}

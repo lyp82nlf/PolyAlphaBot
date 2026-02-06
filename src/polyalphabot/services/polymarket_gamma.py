@@ -7,8 +7,9 @@ from dataclasses import dataclass
 from typing import Any, Dict, List
 from urllib.error import URLError
 from urllib.parse import urlencode
-from urllib.request import Request, urlopen
+from urllib.request import Request
 
+from polyalphabot.utils.http import urlopen_with_proxy
 logger = logging.getLogger(__name__)
 
 @dataclass(frozen=True)
@@ -18,6 +19,7 @@ class GammaConfig:
     retries: int = 2
     retry_backoff_seconds: float = 1.0
     headers: Dict[str, str] | None = None
+    proxies: Dict[str, str] | None = None
 
 
 class GammaClient:
@@ -35,7 +37,11 @@ class GammaClient:
         for attempt in range(self._config.retries + 1):
             start = time.monotonic()
             try:
-                with urlopen(request, timeout=self._config.timeout_seconds) as response:
+                with urlopen_with_proxy(
+                    request,
+                    timeout=self._config.timeout_seconds,
+                    proxies=self._config.proxies,
+                ) as response:
                     data = response.read().decode("utf-8")
                 elapsed = time.monotonic() - start
                 payload = json.loads(data)

@@ -22,11 +22,12 @@ from polyalphabot.services.tge_deduper import TgeDeduper
 from polyalphabot.services.tge_store import TgeStore
 from polyalphabot.services.tge_runner import TgeProducer, TgeEnvelope
 from polyalphabot.utils.logging import setup_logging
+from polyalphabot.utils.http import resolve_proxies
 
 
-def build_engines(settings, notifier) -> list[TradingEngine]:
+def build_engines(settings, notifier, proxies) -> list[TradingEngine]:
     adapter_configs = settings.adapters or [settings.adapter]
-    adapters = build_adapters(adapter_configs, notifier=notifier)
+    adapters = build_adapters(adapter_configs, notifier=notifier, proxies=proxies)
     engines: list[TradingEngine] = []
     for adapter in adapters:
         strategy = TgeMarketSweepStrategy(settings.strategy)
@@ -58,14 +59,20 @@ def main() -> None:
         except OSError as exc:
             logging.error("Failed to change directory to %s: %s", args.directory, exc)
             raise
-    sources = build_sources(settings.tge_sources)
+    proxies = resolve_proxies(
+        http_proxy=settings.http_proxy,
+        https_proxy=settings.https_proxy,
+        all_proxy=settings.all_proxy,
+    )
+    sources = build_sources(settings.tge_sources, proxies=proxies)
     notifier = WeComNotifier(
         WeComConfig(
             webhook_url=settings.wecom_webhook_url,
             cooldown_seconds=settings.wecom_cooldown_seconds,
+            proxies=proxies,
         )
     )
-    engines = build_engines(settings, notifier)
+    engines = build_engines(settings, notifier, proxies)
     consumer = MarketConsumer(engines, settings.consumer_max_workers, notifier)
 
     gamma = GammaClient(
@@ -74,6 +81,7 @@ def main() -> None:
             timeout_seconds=settings.gamma_timeout_seconds,
             retries=settings.gamma_retries,
             retry_backoff_seconds=settings.gamma_retry_backoff_seconds,
+            proxies=proxies,
         )
     )
     store = PolymarketStore(settings.market_db_path)

@@ -6,7 +6,9 @@ import threading
 import time
 from dataclasses import dataclass
 from typing import Optional
-from urllib.request import Request, urlopen
+from urllib.request import Request
+
+from polyalphabot.utils.http import urlopen_with_proxy
 
 logger = logging.getLogger(__name__)
 
@@ -24,6 +26,7 @@ class WeComConfig:
     webhook_url: Optional[str] = None
     timeout_seconds: int = 10
     cooldown_seconds: int = 60
+    proxies: dict[str, str] | None = None
 
 
 class WeComNotifier(Notifier):
@@ -63,7 +66,11 @@ class WeComNotifier(Notifier):
             method="POST",
         )
         try:
-            with urlopen(request, timeout=self._config.timeout_seconds) as response:
+            with urlopen_with_proxy(
+                request,
+                timeout=self._config.timeout_seconds,
+                proxies=self._config.proxies,
+            ) as response:
                 body = response.read().decode("utf-8", errors="ignore")
             if body:
                 try:

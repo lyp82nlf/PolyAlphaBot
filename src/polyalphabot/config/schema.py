@@ -34,6 +34,9 @@ class Settings:
     market_error_threshold: int = 3
     market_error_window_seconds: int = 300
     market_error_cooldown_seconds: int = 600
+    http_proxy: Optional[str] = None
+    https_proxy: Optional[str] = None
+    all_proxy: Optional[str] = None
     market_db_path: str = "data/polymarket_markets.db"
     gamma_headers: Dict[str, str] = field(default_factory=dict)
     gamma_timeout_seconds: int = 15

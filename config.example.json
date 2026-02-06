@@ -68,6 +68,9 @@
   "market_error_threshold": 3,
   "market_error_window_seconds": 300,
   "market_error_cooldown_seconds": 600,
+  "http_proxy": null,
+  "https_proxy": null,
+  "all_proxy": null,
   "market_db_path": "data/polymarket_markets.db",
   "gamma_headers": {
     "user-agent": "Mozilla/5.0",
