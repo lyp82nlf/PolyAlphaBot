@@ -4,6 +4,7 @@ import argparse
 import logging
 import os
 import time
+from urllib.request import Request
 from queue import Queue
 
 from polyalphabot.config.settings import SettingsLoader
@@ -22,7 +23,7 @@ from polyalphabot.services.tge_deduper import TgeDeduper
 from polyalphabot.services.tge_store import TgeStore
 from polyalphabot.services.tge_runner import TgeProducer, TgeEnvelope
 from polyalphabot.utils.logging import setup_logging
-from polyalphabot.utils.http import resolve_proxies
+from polyalphabot.utils.http import resolve_proxies, urlopen_with_proxy
 
 
 def build_engines(settings, notifier, proxies) -> list[TradingEngine]:
@@ -43,6 +44,45 @@ def build_engines(settings, notifier, proxies) -> list[TradingEngine]:
             )
         )
     return engines
+
+
+def _mask_proxy(proxy_value: str | None) -> str:
+    if not proxy_value:
+        return "none"
+    if "://" not in proxy_value:
+        return proxy_value
+    scheme, rest = proxy_value.split("://", 1)
+    if "@" not in rest:
+        return f"{scheme}://{rest}"
+    creds, host = rest.split("@", 1)
+    if ":" in creds:
+        return f"{scheme}://***:***@{host}"
+    return f"{scheme}://***@{host}"
+
+
+def _check_market_proxy(notifier: WeComNotifier, proxies: dict[str, str] | None) -> None:
+    if not proxies:
+        logging.info("Market proxy not configured.")
+        return
+    masked = {k: _mask_proxy(v) for k, v in proxies.items()}
+    logging.info("Market proxy configured: %s", masked)
+    endpoints = [
+        ("gamma", "https://gamma-api.polymarket.com/public-search?q=launch%20a%20token&page=1&limit_per_type=1"),
+        ("clob", "https://clob.polymarket.com/health"),
+    ]
+    for name, url in endpoints:
+        request = Request(url, headers={"accept": "application/json"})
+        try:
+            with urlopen_with_proxy(request, timeout=5, proxies=proxies) as response:
+                response.read(256)
+            logging.info("Market proxy check ok: %s", name)
+        except Exception as exc:
+            logging.warning("Market proxy check failed: %s err=%s", name, exc)
+            notifier.send_markdown(
+                "市场代理检测失败",
+                f"**endpoint**: <font color=\"warning\">{name}</font>\n"
+                f"**error**: <font color=\"warning\">{exc}</font>",
+            )
 
 
 def main() -> None:
@@ -73,6 +113,7 @@ def main() -> None:
             proxies=no_proxy,
         )
     )
+    _check_market_proxy(notifier, market_proxies)
     engines = build_engines(settings, notifier, market_proxies)
     consumer = MarketConsumer(engines, settings.consumer_max_workers, notifier)
 
