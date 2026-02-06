@@ -37,7 +37,7 @@ def resolve_proxies(
 
 
 def urlopen_with_proxy(request, timeout: int, proxies: Optional[Dict[str, str]] = None):
-    if not proxies:
+    if proxies is None:
         return urlopen(request, timeout=timeout)
     opener = build_opener(ProxyHandler(proxies))
     return opener.open(request, timeout=timeout)
