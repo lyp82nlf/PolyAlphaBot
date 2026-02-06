@@ -86,7 +86,7 @@ def _check_market_proxy(notifier: WeComNotifier, proxies: dict[str, str] | None)
                 response.read(256)
             logging.info("Market proxy check ok: %s", name)
         except HTTPError as exc:
-            if exc.code in (401, 403, 405):
+            if exc.code in (401, 403, 404, 405):
                 logging.info("Market proxy check ok (http %s): %s", exc.code, name)
                 continue
             logging.warning("Market proxy check failed: %s err=%s", name, exc)
