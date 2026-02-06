@@ -5,6 +5,7 @@ import logging
 import os
 import time
 from urllib.request import Request
+from urllib.error import HTTPError
 from queue import Queue
 
 from polyalphabot.config.settings import SettingsLoader
@@ -67,15 +68,33 @@ def _check_market_proxy(notifier: WeComNotifier, proxies: dict[str, str] | None)
     masked = {k: _mask_proxy(v) for k, v in proxies.items()}
     logging.info("Market proxy configured: %s", masked)
     endpoints = [
-        ("gamma", "https://gamma-api.polymarket.com/public-search?q=launch%20a%20token&page=1&limit_per_type=1"),
-        ("clob", "https://clob.polymarket.com/health"),
+        (
+            "gamma",
+            "https://gamma-api.polymarket.com/public-search?q=launch%20a%20token&page=1&limit_per_type=1",
+            {"accept": "application/json", "user-agent": "Mozilla/5.0"},
+        ),
+        (
+            "clob",
+            "https://clob.polymarket.com/health",
+            {"accept": "application/json", "user-agent": "Mozilla/5.0"},
+        ),
     ]
-    for name, url in endpoints:
-        request = Request(url, headers={"accept": "application/json"})
+    for name, url, headers in endpoints:
+        request = Request(url, headers=headers)
         try:
             with urlopen_with_proxy(request, timeout=5, proxies=proxies) as response:
                 response.read(256)
             logging.info("Market proxy check ok: %s", name)
+        except HTTPError as exc:
+            if exc.code in (401, 403, 405):
+                logging.info("Market proxy check ok (http %s): %s", exc.code, name)
+                continue
+            logging.warning("Market proxy check failed: %s err=%s", name, exc)
+            notifier.send_markdown(
+                "市场代理检测失败",
+                f"**endpoint**: <font color=\"warning\">{name}</font>\n"
+                f"**error**: <font color=\"warning\">{exc}</font>",
+            )
         except Exception as exc:
             logging.warning("Market proxy check failed: %s err=%s", name, exc)
             notifier.send_markdown(
